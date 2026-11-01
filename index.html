@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0a1020"><title>HIRO — Inteligência artificial</title>
+<style>
+:root{color-scheme:dark;--bg:#090f1e;--panel:#111c30;--line:#263752;--text:#edf4ff;--muted:#91a3c2;--blue:#78b5ff}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 50% -20%,#1e3762 0,transparent 55%),var(--bg);color:var(--text);font:15px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;display:flex;flex-direction:column}
+header{height:68px;border-bottom:1px solid #ffffff12;display:flex;align-items:center;justify-content:space-between;padding:0 max(18px,calc((100vw - 880px)/2))}
+.brand{display:flex;align-items:center;gap:11px;font-weight:850;letter-spacing:2px;font-size:20px}.logo{width:37px;height:37px;border-radius:12px;background:linear-gradient(135deg,#8bc7ff,#477ce8);display:grid;place-items:center;color:#071225;font-weight:950;box-shadow:0 5px 24px #3978df55}
+.tag{font-size:12px;color:#a9bddc;border:1px solid #344766;padding:5px 10px;border-radius:99px}
+main{width:min(880px,100%);margin:0 auto;flex:1;display:flex;flex-direction:column;padding:28px 16px 18px}
+.welcome{text-align:center;margin:36px auto 26px;max-width:580px}.orb{width:66px;height:66px;margin:0 auto 17px;border-radius:22px;background:linear-gradient(145deg,#203e6c,#15233d);border:1px solid #6a9ce266;display:grid;place-items:center;font-size:29px;box-shadow:0 12px 42px #2759a044}
+h1{font-size:clamp(32px,7vw,44px);letter-spacing:-1.5px;margin:0 0 8px}.welcome p{color:var(--muted);margin:0}
+.chips{display:flex;flex-wrap:wrap;justify-content:center;gap:9px;margin:18px 0 25px}.chip{background:#111d32;border:1px solid var(--line);color:#cbdaf2;border-radius:99px;padding:9px 13px;font-size:13px;cursor:pointer}.chip:hover{border-color:var(--blue)}
+#chat{display:flex;flex-direction:column;gap:17px;padding:8px 0 18px}.message{display:flex;gap:10px;max-width:90%;align-items:flex-start}.message.user{align-self:flex-end;flex-direction:row-reverse}.avatar{width:31px;height:31px;flex:0 0 31px;border-radius:10px;background:#1d355b;display:grid;place-items:center;color:#bcd8ff;font-size:12px;font-weight:850}.user .avatar{background:#294775;color:#fff}.bubble{padding:12px 15px;border:1px solid #ffffff13;background:#111d32;border-radius:5px 16px 16px 16px;white-space:pre-wrap;overflow-wrap:anywhere}.user .bubble{background:#1b3762;border-color:#426da5;border-radius:16px 5px 16px 16px}
+.composer-wrap{position:sticky;bottom:0;padding:12px 0 3px;background:linear-gradient(transparent,var(--bg) 22%)}.composer{display:flex;gap:10px;padding:9px;border:1px solid #354b6c;background:#111b2e;border-radius:18px;box-shadow:0 12px 40px #0005}.composer:focus-within{border-color:var(--blue);box-shadow:0 0 0 3px #78b5ff18}textarea{resize:none;max-height:150px;min-height:42px;flex:1;background:transparent;border:0;outline:0;color:var(--text);font:inherit;padding:9px 8px}textarea::placeholder{color:#7184a4}.send{width:44px;height:44px;border:0;border-radius:13px;background:linear-gradient(135deg,#83c2ff,#477ce9);color:#071226;font-size:19px;font-weight:900;cursor:pointer}.send:disabled{opacity:.45;cursor:wait}.tools{display:flex;justify-content:flex-end;margin:8px 2px}.clear{background:transparent;border:0;color:#8ea3c4;font-size:12px;cursor:pointer}.clear:hover{color:#fff}.hint{text-align:center;color:#71809a;font-size:11px;margin:8px 0 0}footer{text-align:center;color:#647590;font-size:11px;padding:10px 16px 18px}
+@media(max-width:600px){header{height:62px}main{padding-top:15px}.welcome{margin-top:25px}.message{max-width:96%}}
+</style>
+</head>
+<body>
+<header><div class="brand"><div class="logo">H</div>HIRO</div><div class="tag">IA experimental</div></header>
+<main>
+<section class="welcome" id="welcome"><div class="orb">✦</div><h1>Olá, eu sou o HIRO.</h1><p>Pergunte o que quiser. Vou tentar explicar de um jeito claro e direto.</p></section>
+<div class="chips" id="chips">
+<button class="chip" data-q="Por que o céu é azul?">Por que o céu é azul?</button>
+<button class="chip" data-q="Me explique a fotossíntese de um jeito simples.">Explicar ciência</button>
+<button class="chip" data-q="Quanto é 18% de 250?">Fazer um cálculo</button>
+<button class="chip" data-q="Me conte uma curiosidade interessante.">Uma curiosidade</button>
+</div>
+<section id="chat" aria-live="polite"></section>
+<div class="composer-wrap">
+<form class="composer" id="form"><textarea id="input" rows="1" maxlength="4000" placeholder="Pergunte alguma coisa ao HIRO..." aria-label="Sua pergunta"></textarea><button class="send" id="send" aria-label="Enviar">➤</button></form>
+<div class="tools"><button class="clear" id="clear">Limpar conversa</button></div>
+<div class="hint">As respostas podem conter erros. Evite compartilhar dados pessoais ou informações privadas.</div>
+</div>
+</main>
+<footer>HIRO · Feito para aprender e explorar</footer>
+<script>
+const chat=document.querySelector('#chat'),input=document.querySelector('#input'),form=document.querySelector('#form'),send=document.querySelector('#send');
+let previousInteractionId=null,history=[];
+function addMessage(text,who){const row=document.createElement('div');row.className='message '+who;const av=document.createElement('div');av.className='avatar';av.textContent=who==='user'?'VOCÊ':'H';const b=document.createElement('div');b.className='bubble';b.textContent=text;row.append(av,b);chat.append(row);row.scrollIntoView({behavior:'smooth',block:'end'});}
+function showChat(){document.querySelector('#welcome').style.display='none';document.querySelector('#chips').style.display='none';}
+async function submit(q){q=q.trim();if(!q||send.disabled)return;showChat();addMessage(q,'user');history.push({role:'user',text:q});input.value='';input.style.height='auto';send.disabled=true;send.textContent='…';
+try{
+ const res=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:q,previousInteractionId})});
+ const data=await res.json();if(!res.ok)throw new Error(data.error||'Não consegui responder agora. Tente novamente.');
+ const answer=data.answer||'Não recebi uma resposta. Tente perguntar de outro jeito.';previousInteractionId=data.interactionId||previousInteractionId;history.push({role:'assistant',text:answer});addMessage(answer,'hiro');
+}catch(err){addMessage('Ops! '+err.message,'hiro');}
+finally{send.disabled=false;send.textContent='➤';input.focus();}
+}
+form.addEventListener('submit',e=>{e.preventDefault();submit(input.value);});
+input.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();form.requestSubmit();}});
+input.addEventListener('input',()=>{input.style.height='auto';input.style.height=Math.min(input.scrollHeight,150)+'px';});
+document.querySelectorAll('.chip').forEach(b=>b.addEventListener('click',()=>submit(b.dataset.q)));
+document.querySelector('#clear').addEventListener('click',()=>{chat.replaceChildren();previousInteractionId=null;history=[];document.querySelector('#welcome').style.display='block';document.querySelector('#chips').style.display='flex';input.focus();});
+</script>
+</body></html>
