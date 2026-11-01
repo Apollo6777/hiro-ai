@@ -57,8 +57,11 @@ export default async (req) => {
     const data = await response.json();
 
     if (!response.ok) {
-      return json({ error: "Falha na conexão com a inteligência artificial." }, 502);
-    }
+  return json({
+    error: "Erro do Gemini",
+    details: data.error?.message || JSON.stringify(data)
+  }, 502);
+}
 
     if (!data.output_text) {
       return json({ error: "A IA não retornou uma resposta." }, 502);
